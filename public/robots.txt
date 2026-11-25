@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://npanda.online/sitemap.xml
