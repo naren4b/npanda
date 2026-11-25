@@ -1,0 +1,37 @@
+name: Mirror main to GitLab
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: gitlab-mirror
+  cancel-in-progress: false
+
+jobs:
+  mirror:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out full history
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Push main to GitLab
+        env:
+          GITLAB_PUSH_TOKEN: ${{ secrets.GITLAB_PUSH_TOKEN }}
+        run: |
+          set -euo pipefail
+          if [ -z "${GITLAB_PUSH_TOKEN}" ]; then
+            echo "GITLAB_PUSH_TOKEN is missing"
+            exit 1
+          fi
+          git config --global credential.helper 'store --file=/tmp/gitlab-credentials'
+          printf 'https://oauth2:%s@gitlab.com\n' "$GITLAB_PUSH_TOKEN" > /tmp/gitlab-credentials
+          chmod 600 /tmp/gitlab-credentials
+          trap 'rm -f /tmp/gitlab-credentials' EXIT
+          git remote add gitlab https://gitlab.com/naren4b/npanda.git
+          git push gitlab HEAD:refs/heads/main
