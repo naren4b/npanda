@@ -1,0 +1,12 @@
+stages:
+  - deploy
+pages:
+  stage: deploy
+  script:
+    - test -s public/index.html
+    - test -s public/style.css
+    - test -s public/favicon.svg
+  pages:
+    publish: public
+  rules:
+    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
